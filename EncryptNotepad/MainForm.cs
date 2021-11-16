@@ -14,7 +14,7 @@ using EncryptDecryptSymetric;
 
 namespace EncryptNotepad
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form , IFindReplace
     {
         
         private string openedText;
@@ -84,7 +84,7 @@ namespace EncryptNotepad
 
         private void newCryptpad()
         {
-            mainRtb.Clear();
+            mainTextBox.Clear();
             // My init
             currentFileName = defaultFileName;
             SetWindowTitle(currentFileName);
@@ -145,7 +145,7 @@ namespace EncryptNotepad
             {
                 using (StreamWriter sw = new StreamWriter(textStream))
                 {
-                    sw.Write(mainRtb.Text);
+                    sw.Write(mainTextBox.Text);
                 }
                 textStream.Close();
                 edited = false;
@@ -191,10 +191,10 @@ namespace EncryptNotepad
         {
             if (encrypted)
             {
-                mainRtb.ReadOnly = true;
+                mainTextBox.ReadOnly = true;
                 forceEdit = false;
             }
-            else mainRtb.ReadOnly = false;
+            else mainTextBox.ReadOnly = false;
             SetWindowTitle(currentFileName);
 
         }
@@ -204,21 +204,21 @@ namespace EncryptNotepad
         // UI Listener ========================================================
         private void encryptMenu_Click(object sender, EventArgs e)
         {
-            encrypted = AesOperation.CheckEncrypted(mainRtb.Text);
+            encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
             if (encrypted)
             {
                 if (!cryptConfirmation(encrypted)) return;
             }
 
-            if (mainRtb.Text != String.Empty)
+            if (mainTextBox.Text != String.Empty)
             {
                 PasswordForm pwd = new PasswordForm();
                 DialogResult res = pwd.ShowDialog();
                 if (res == DialogResult.OK)
                 {
                     byte[] key = pwd.key;
-                    string encryptedText = AesOperation.EncryptString(key, mainRtb.Text);
-                    mainRtb.Text = encryptedText;
+                    string encryptedText = AesOperation.EncryptString(key, mainTextBox.Text);
+                    mainTextBox.Text = encryptedText;
                     edited = true;
                     forceEdit = false;
                 }
@@ -228,33 +228,33 @@ namespace EncryptNotepad
             {
                 MsgBox.ShowError("Error", "Text Empty");
             }
-            encrypted = AesOperation.CheckEncrypted(mainRtb.Text);
+            encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
             cryptUIUpdate();
 
         }
 
         private void decryptMenu_Click(object sender, EventArgs e)
         {
-            encrypted = AesOperation.CheckEncrypted(mainRtb.Text);
+            encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
             if (!encrypted)
             {
                 if (!cryptConfirmation(encrypted)) return;
             }
-            if (mainRtb.Text != String.Empty )
+            if (mainTextBox.Text != String.Empty )
             {
                 PasswordForm pwd = new PasswordForm();
                 DialogResult res = pwd.ShowDialog();
                 if (res == DialogResult.OK)
                 {
                     byte[] key = pwd.key;
-                    string decryptedText = AesOperation.DecryptString(key, mainRtb.Text);
+                    string decryptedText = AesOperation.DecryptString(key, mainTextBox.Text);
                     if (decryptedText == null)
                     {
                         MsgBox.ShowError("Decrypt failed", "Failed to decrypt, wrong password or encrypted text has modified");
                     }
                     else
                     {
-                        mainRtb.Text = decryptedText;
+                        mainTextBox.Text = decryptedText;
                         edited = true;
                         forceEdit = false;
                         
@@ -266,7 +266,7 @@ namespace EncryptNotepad
             {
                 MsgBox.ShowError("Error", "Text Empty");
             }
-            encrypted = AesOperation.CheckEncrypted(mainRtb.Text);
+            encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
             cryptUIUpdate();
 
         }
@@ -287,7 +287,7 @@ namespace EncryptNotepad
                 {
                     using (StreamReader reader = new StreamReader(fsSource))
                     {
-                        mainRtb.Text = reader.ReadToEnd();
+                        mainTextBox.Text = reader.ReadToEnd();
                         fsSource.Close();
                     }
                 }
@@ -297,7 +297,7 @@ namespace EncryptNotepad
 
             }
 
-            encrypted = AesOperation.CheckEncrypted(mainRtb.Text);
+            encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
             cryptUIUpdate();
 
         }
@@ -370,7 +370,7 @@ namespace EncryptNotepad
                     
                     if (cryptEditConfirmation())
                     {
-                        mainRtb.ReadOnly = false;
+                        mainTextBox.ReadOnly = false;
                         forceEdit = true;
                     }
                 }
@@ -381,7 +381,7 @@ namespace EncryptNotepad
 
         private void mainRtb_Validated(object sender, EventArgs e)
         {
-            encrypted = AesOperation.CheckEncrypted(mainRtb.Text);
+            encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
             SetWindowTitle(currentFileName);
          
 
@@ -390,34 +390,29 @@ namespace EncryptNotepad
 
         private void findToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FindForm find = new FindForm();
-            if (find.ShowDialog() == DialogResult.OK)
-            {
-                currentFindText = find.findText;
-                findPos = mainRtb.Find(currentFindText , findPos , RichTextBoxFinds.None);
-                mainRtb.Select(findPos, currentFindText.Length);
-                findPos += mainRtb.Text.Length + 1;
-            }
+            FindForm find = new FindForm(currentFindText , this);
+            find.Show();
+           
         }
 
         private void cutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            mainRtb.Cut();
+            mainTextBox.Cut();
         }
 
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            mainRtb.Undo();
+            mainTextBox.Undo();
         }
 
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            mainRtb.Copy();
+            mainTextBox.Copy();
         }
 
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            mainRtb.Paste();
+            mainTextBox.Paste();
         }
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -431,7 +426,53 @@ namespace EncryptNotepad
             {
                 findToolStripMenuItem_Click(new object() , new EventArgs());
             }
-            else mainRtb.Find(currentFindText , RichTextBoxFinds.WholeWord);
+           // else mainTextBox.Find(currentFindText , RichTextBoxFinds.WholeWord);
+        }
+
+        private void fontToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FontDialog fontDialog = new FontDialog();
+            fontDialog.Font = mainTextBox.Font;
+            if (fontDialog.ShowDialog() == DialogResult.OK)
+            {
+                mainTextBox.Font = fontDialog.Font;
+            }
+        }
+
+        private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (wordWrapToolStripMenuItem.Checked)
+            {
+                mainTextBox.WordWrap = false;
+                wordWrapToolStripMenuItem.Checked = false;
+            }
+            else
+            {
+                mainTextBox.WordWrap = true;
+                wordWrapToolStripMenuItem.Checked = true;
+            }
+        }
+
+        public void FindNext(string text)
+        {
+            currentFindText = text;
+            findPos = mainTextBox.Text.IndexOfAny(currentFindText.ToCharArray(), findPos);
+            try
+            {
+                mainTextBox.Focus();
+                mainTextBox.Select(findPos, currentFindText.Length);
+                findPos += currentFindText.Length;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                MsgBox.ShowWarning("Cryptpad", "Can't find " + currentFindText);
+                findPos = 0;
+            }
+        }
+
+        public void Replate(string text, string replaceText)
+        {
+            throw new NotImplementedException();
         }
     } 
     

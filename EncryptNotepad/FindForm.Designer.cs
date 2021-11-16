@@ -32,6 +32,7 @@ namespace EncryptNotepad
             this.findWhatTextBox = new System.Windows.Forms.TextBox();
             this.findButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.cancelButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // findWhatTextBox
@@ -40,6 +41,7 @@ namespace EncryptNotepad
             this.findWhatTextBox.Name = "findWhatTextBox";
             this.findWhatTextBox.Size = new System.Drawing.Size(290, 22);
             this.findWhatTextBox.TabIndex = 0;
+            this.findWhatTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.findWhatTextBox_KeyUp);
             // 
             // findButton
             // 
@@ -47,7 +49,7 @@ namespace EncryptNotepad
             this.findButton.Name = "findButton";
             this.findButton.Size = new System.Drawing.Size(75, 22);
             this.findButton.TabIndex = 1;
-            this.findButton.Text = "Find";
+            this.findButton.Text = "Find Next";
             this.findButton.UseVisualStyleBackColor = true;
             this.findButton.Click += new System.EventHandler(this.findButton_Click);
             // 
@@ -60,17 +62,31 @@ namespace EncryptNotepad
             this.label1.TabIndex = 2;
             this.label1.Text = "Find what :";
             // 
+            // cancelButton
+            // 
+            this.cancelButton.Location = new System.Drawing.Point(391, 51);
+            this.cancelButton.Name = "cancelButton";
+            this.cancelButton.Size = new System.Drawing.Size(75, 22);
+            this.cancelButton.TabIndex = 3;
+            this.cancelButton.Text = "Cancel";
+            this.cancelButton.UseVisualStyleBackColor = true;
+            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
+            // 
             // FindForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(479, 82);
+            this.ClientSize = new System.Drawing.Size(490, 119);
+            this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.findButton);
             this.Controls.Add(this.findWhatTextBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "FindForm";
-            this.Text = "FindForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Find...";
+            this.Activated += new System.EventHandler(this.FindForm_Enter);
+            this.Deactivate += new System.EventHandler(this.FindForm_Leave);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -81,5 +97,6 @@ namespace EncryptNotepad
         private System.Windows.Forms.Button findButton;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox findWhatTextBox;
+        private System.Windows.Forms.Button cancelButton;
     }
 }

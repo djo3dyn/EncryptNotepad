@@ -17,6 +17,7 @@ namespace EncryptNotepad
         public PasswordForm()
         {
             InitializeComponent();
+            
         }
 
         private void okBtn_Click(object sender, EventArgs e)
