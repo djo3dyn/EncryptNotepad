@@ -7,7 +7,6 @@ namespace EncryptDecryptSymetric
 {  
     public class AesOperation  
     { 
-        // Edited
         public static string EncryptString(byte[] key, string plainText)  
             {  
                 byte[] iv = new byte[16];  
@@ -79,20 +78,47 @@ namespace EncryptDecryptSymetric
         }
 
         // TODO : check encrypted text
-        /*
-         * Ciri-ciri :
-            lebih dari 24 char
-            diakhiri ==
-            tidak ada spasi
-        */
         public static bool CheckEncrypted(string rawtext)
         {
             if (rawtext.Length >= 24)
             {
-                if (!rawtext.Contains(" ") || rawtext.EndsWith("=="))
+                // Check character
+                byte[] rawBytes = Encoding.UTF8.GetBytes(rawtext);
+                int vocalCharCount = 0;
+                int otherCharCount = 0;
+                int spaceCount = 0;
+                int newLineCount = 0;
+                int totalChar = rawBytes.Length;
+                foreach (byte b in rawBytes)
                 {
-                    return true;
+                    if (b == 10) newLineCount++;
+                    else if (b == 32) spaceCount++;
+                    // vocal upper 65 , 69 , 73 , 79 , 85
+                    else if (b == 65 || b == 69 || b == 73 || b == 79 || b == 85) vocalCharCount++;
+                    // vocal lower 97 , 101 , 105 , 111 , 117
+                    else if (b == 97 || b == 101 || b == 105 || b == 111 || b == 117) vocalCharCount++;
+                    else otherCharCount++;
+                    
                 }
+                float vocalPercent = (vocalCharCount * 100 / totalChar) ;
+                float spacePercent = (spaceCount * 100 / totalChar) ;
+                float newLinePercent = (newLineCount * 100 / totalChar) ;
+                float otherPercent = (otherCharCount * 100 / totalChar) ;
+                // Check percetage text -----
+                /*
+                Console.WriteLine("Check Character count -----------------");
+                Console.WriteLine("Vocal Percent : {0:F}", vocalPercent);
+                Console.WriteLine("Space Percent : {0:F}", spacePercent);
+                Console.WriteLine("New Line Percent : {0:F}", newLinePercent);
+                Console.WriteLine("Other Percent : {0:F}", otherPercent);
+                */
+                /*
+                Encrypted Text Criteria :
+                * Vocal percent < 20
+                * Space percent < 1
+                * New line percent < 2
+                */
+                if (vocalPercent < 20 && (spacePercent < 1 || newLinePercent < 3)) return true;
                 else return false;  
             }
             else return false;

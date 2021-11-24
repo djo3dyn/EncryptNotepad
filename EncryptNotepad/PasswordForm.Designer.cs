@@ -35,18 +35,18 @@ namespace EncryptNotepad
             // 
             // passwordTxt
             // 
-            this.passwordTxt.Location = new System.Drawing.Point(12, 30);
+            this.passwordTxt.Location = new System.Drawing.Point(12, 33);
             this.passwordTxt.Name = "passwordTxt";
             this.passwordTxt.PasswordChar = '*';
-            this.passwordTxt.Size = new System.Drawing.Size(368, 22);
+            this.passwordTxt.Size = new System.Drawing.Size(271, 22);
             this.passwordTxt.TabIndex = 0;
             this.passwordTxt.KeyUp += new System.Windows.Forms.KeyEventHandler(this.passwordTxt_KeyUp);
             // 
             // okBtn
             // 
-            this.okBtn.Location = new System.Drawing.Point(386, 30);
+            this.okBtn.Location = new System.Drawing.Point(289, 32);
             this.okBtn.Name = "okBtn";
-            this.okBtn.Size = new System.Drawing.Size(75, 23);
+            this.okBtn.Size = new System.Drawing.Size(75, 25);
             this.okBtn.TabIndex = 1;
             this.okBtn.Text = "OK";
             this.okBtn.UseVisualStyleBackColor = true;
@@ -56,7 +56,7 @@ namespace EncryptNotepad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(473, 92);
+            this.ClientSize = new System.Drawing.Size(371, 92);
             this.Controls.Add(this.okBtn);
             this.Controls.Add(this.passwordTxt);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;

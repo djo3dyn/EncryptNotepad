@@ -34,10 +34,11 @@ namespace EncryptNotepad
 
         private void passwordTxt_KeyUp(object sender, KeyEventArgs e)
         {
-            e.Handled = true;
+            
             if (e.KeyCode == Keys.Enter)
             {  
                 okBtn_Click(new object(), new EventArgs());
+                e.Handled = true;
             }
         }
     }

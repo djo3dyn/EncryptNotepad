@@ -49,27 +49,29 @@ namespace EncryptNotepad
             this.findNextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.findPreviousToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.replaceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.goToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.formatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wordWrapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.zoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusBarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.encryptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.encryptMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.decryptMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.statusBar = new System.Windows.Forms.StatusStrip();
             this.mainTextBox = new System.Windows.Forms.TextBox();
+            this.cryptStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1.SuspendLayout();
+            this.statusBar.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
             // 
+            this.menuStrip1.BackColor = System.Drawing.SystemColors.Window;
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
@@ -83,7 +85,7 @@ namespace EncryptNotepad
             this.menuStrip1.Size = new System.Drawing.Size(958, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
-            this.menuStrip1.Click += new System.EventHandler(this.mainRtb_Validated);
+            this.menuStrip1.Click += new System.EventHandler(this.mainTextBox_Validated);
             // 
             // fileToolStripMenuItem
             // 
@@ -96,7 +98,7 @@ namespace EncryptNotepad
             this.toolStripSeparator2,
             this.exitMenu});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 26);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // newMenu
@@ -170,11 +172,11 @@ namespace EncryptNotepad
             this.findNextToolStripMenuItem,
             this.findPreviousToolStripMenuItem,
             this.replaceToolStripMenuItem,
-            this.goToToolStripMenuItem,
             this.toolStripSeparator6,
-            this.selectAllToolStripMenuItem});
+            this.selectAllToolStripMenuItem,
+            this.dateToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(49, 26);
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
             this.editToolStripMenuItem.Text = "Edit";
             // 
             // undoToolStripMenuItem
@@ -241,18 +243,15 @@ namespace EncryptNotepad
             this.findPreviousToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F3)));
             this.findPreviousToolStripMenuItem.Size = new System.Drawing.Size(243, 26);
             this.findPreviousToolStripMenuItem.Text = "Find Previous";
+            this.findPreviousToolStripMenuItem.Click += new System.EventHandler(this.findPreviousToolStripMenuItem_Click);
             // 
             // replaceToolStripMenuItem
             // 
             this.replaceToolStripMenuItem.Name = "replaceToolStripMenuItem";
+            this.replaceToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.H)));
             this.replaceToolStripMenuItem.Size = new System.Drawing.Size(243, 26);
             this.replaceToolStripMenuItem.Text = "Replace...";
-            // 
-            // goToToolStripMenuItem
-            // 
-            this.goToToolStripMenuItem.Name = "goToToolStripMenuItem";
-            this.goToToolStripMenuItem.Size = new System.Drawing.Size(243, 26);
-            this.goToToolStripMenuItem.Text = "Go To";
+            this.replaceToolStripMenuItem.Click += new System.EventHandler(this.replaceToolStripMenuItem_Click);
             // 
             // toolStripSeparator6
             // 
@@ -262,8 +261,17 @@ namespace EncryptNotepad
             // selectAllToolStripMenuItem
             // 
             this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
+            this.selectAllToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
             this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(243, 26);
             this.selectAllToolStripMenuItem.Text = "Select All";
+            this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
+            // 
+            // dateToolStripMenuItem
+            // 
+            this.dateToolStripMenuItem.Name = "dateToolStripMenuItem";
+            this.dateToolStripMenuItem.Size = new System.Drawing.Size(243, 26);
+            this.dateToolStripMenuItem.Text = "Date/Time";
+            this.dateToolStripMenuItem.Click += new System.EventHandler(this.dateToolStripMenuItem_Click);
             // 
             // formatToolStripMenuItem
             // 
@@ -280,37 +288,33 @@ namespace EncryptNotepad
             this.wordWrapToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.wordWrapToolStripMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.wordWrapToolStripMenuItem.Name = "wordWrapToolStripMenuItem";
-            this.wordWrapToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.wordWrapToolStripMenuItem.Size = new System.Drawing.Size(168, 26);
             this.wordWrapToolStripMenuItem.Text = "Word Wrap";
             this.wordWrapToolStripMenuItem.Click += new System.EventHandler(this.wordWrapToolStripMenuItem_Click);
             // 
             // fontToolStripMenuItem
             // 
             this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(168, 26);
             this.fontToolStripMenuItem.Text = "Font...";
             this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
             // 
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.zoomToolStripMenuItem,
             this.statusBarToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(55, 26);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(55, 24);
             this.viewToolStripMenuItem.Text = "View";
-            // 
-            // zoomToolStripMenuItem
-            // 
-            this.zoomToolStripMenuItem.Name = "zoomToolStripMenuItem";
-            this.zoomToolStripMenuItem.Size = new System.Drawing.Size(158, 26);
-            this.zoomToolStripMenuItem.Text = "Zoom";
             // 
             // statusBarToolStripMenuItem
             // 
+            this.statusBarToolStripMenuItem.Checked = true;
+            this.statusBarToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.statusBarToolStripMenuItem.Name = "statusBarToolStripMenuItem";
             this.statusBarToolStripMenuItem.Size = new System.Drawing.Size(158, 26);
             this.statusBarToolStripMenuItem.Text = "Status Bar";
+            this.statusBarToolStripMenuItem.Click += new System.EventHandler(this.statusBarToolStripMenuItem_Click);
             // 
             // encryptionToolStripMenuItem
             // 
@@ -318,7 +322,7 @@ namespace EncryptNotepad
             this.encryptMenu,
             this.decryptMenu});
             this.encryptionToolStripMenuItem.Name = "encryptionToolStripMenuItem";
-            this.encryptionToolStripMenuItem.Size = new System.Drawing.Size(93, 26);
+            this.encryptionToolStripMenuItem.Size = new System.Drawing.Size(93, 24);
             this.encryptionToolStripMenuItem.Text = "Encryption";
             // 
             // encryptMenu
@@ -326,7 +330,7 @@ namespace EncryptNotepad
             this.encryptMenu.Name = "encryptMenu";
             this.encryptMenu.ShortcutKeyDisplayString = "";
             this.encryptMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
-            this.encryptMenu.Size = new System.Drawing.Size(206, 26);
+            this.encryptMenu.Size = new System.Drawing.Size(224, 26);
             this.encryptMenu.Text = "Encrypt...";
             this.encryptMenu.Click += new System.EventHandler(this.encryptMenu_Click);
             // 
@@ -335,7 +339,7 @@ namespace EncryptNotepad
             this.decryptMenu.Name = "decryptMenu";
             this.decryptMenu.ShortcutKeyDisplayString = "";
             this.decryptMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
-            this.decryptMenu.Size = new System.Drawing.Size(206, 26);
+            this.decryptMenu.Size = new System.Drawing.Size(224, 26);
             this.decryptMenu.Text = "Decrypt...";
             this.decryptMenu.Click += new System.EventHandler(this.decryptMenu_Click);
             // 
@@ -344,7 +348,7 @@ namespace EncryptNotepad
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.aboutToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(55, 26);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(55, 24);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // aboutToolStripMenuItem
@@ -353,15 +357,18 @@ namespace EncryptNotepad
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(142, 26);
             this.aboutToolStripMenuItem.Text = "About...";
             // 
-            // statusStrip1
+            // statusBar
             // 
-            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.statusStrip1.Location = new System.Drawing.Point(0, 613);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(958, 22);
-            this.statusStrip1.TabIndex = 2;
-            this.statusStrip1.Text = "statusStrip1";
-            this.statusStrip1.Click += new System.EventHandler(this.mainRtb_Validated);
+            this.statusBar.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.cryptStatus});
+            this.statusBar.Location = new System.Drawing.Point(0, 609);
+            this.statusBar.Name = "statusBar";
+            this.statusBar.Size = new System.Drawing.Size(958, 26);
+            this.statusBar.SizingGrip = false;
+            this.statusBar.TabIndex = 2;
+            this.statusBar.Text = "statusBar";
+            this.statusBar.Click += new System.EventHandler(this.mainTextBox_Validated);
             // 
             // mainTextBox
             // 
@@ -371,16 +378,23 @@ namespace EncryptNotepad
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.mainTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.mainTextBox.Font = new System.Drawing.Font("Courier New", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.mainTextBox.Font = new System.Drawing.Font("Consolas", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.mainTextBox.HideSelection = false;
             this.mainTextBox.Location = new System.Drawing.Point(0, 31);
-            this.mainTextBox.MaxLength = 65535;
+            this.mainTextBox.MaxLength = 2147483647;
             this.mainTextBox.Multiline = true;
             this.mainTextBox.Name = "mainTextBox";
             this.mainTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.mainTextBox.Size = new System.Drawing.Size(958, 579);
             this.mainTextBox.TabIndex = 3;
-            this.mainTextBox.TextChanged += new System.EventHandler(this.mainRtb_TextChanged);
-            this.mainTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.mainRtb_KeyDown);
+            this.mainTextBox.TextChanged += new System.EventHandler(this.mainTextBox_TextChanged);
+            this.mainTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.mainTextBox_KeyDown);
+            // 
+            // cryptStatus
+            // 
+            this.cryptStatus.Name = "cryptStatus";
+            this.cryptStatus.Size = new System.Drawing.Size(49, 20);
+            this.cryptStatus.Text = "Status";
             // 
             // MainForm
             // 
@@ -388,16 +402,18 @@ namespace EncryptNotepad
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(958, 635);
             this.Controls.Add(this.mainTextBox);
-            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.statusBar);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "Cryptpad";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
-            this.Click += new System.EventHandler(this.mainRtb_Validated);
+            this.Click += new System.EventHandler(this.mainTextBox_Validated);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.statusBar.ResumeLayout(false);
+            this.statusBar.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -407,7 +423,7 @@ namespace EncryptNotepad
 
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.StatusStrip statusBar;
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem formatToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
@@ -429,18 +445,18 @@ namespace EncryptNotepad
         private System.Windows.Forms.ToolStripMenuItem findNextToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem findPreviousToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem replaceToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem goToToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripMenuItem selectAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem wordWrapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fontToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem zoomToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem statusBarToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem encryptionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem encryptMenu;
         private System.Windows.Forms.ToolStripMenuItem decryptMenu;
         private System.Windows.Forms.TextBox mainTextBox;
+        private System.Windows.Forms.ToolStripMenuItem dateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripStatusLabel cryptStatus;
     }
 }
 
