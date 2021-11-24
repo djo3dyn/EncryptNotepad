@@ -25,14 +25,26 @@ namespace EncryptNotepad
             downDirection = down;
             if (down) downRadioButton.Checked = true;
             else upRadioButton.Checked = true;
-            if (findWhatTextBox.Focus()) Console.WriteLine("Focus....");
-
             if (replace)
             {
                 findTab.SelectedTab = tabPage2;
                 if (down) downRadioButton2.Checked = true;
                 else upRadioButton2.Checked = true;
+            }
+            TextBoxFocus();
+        }
 
+        private void TextBoxFocus()
+        {
+            if (findTab.SelectedTab == tabPage1)
+            {
+                findWhatTextBox.Focus();
+                findWhatTextBox.Select(findWhatTextBox.Text.Length, 0);
+            }
+            else if (findTab.SelectedTab == tabPage2)
+            {
+                findWhat2TextBox.Focus();
+                findWhat2TextBox.Select(findWhat2TextBox.Text.Length, 0);
             }
         }
 
@@ -40,7 +52,11 @@ namespace EncryptNotepad
         {
             if (findTab.SelectedTab == tabPage1) findText = findWhatTextBox.Text;
             else if (findTab.SelectedTab == tabPage2) findText = findWhat2TextBox.Text;
-            if (mfindReplace != null)mfindReplace.FindNext(findText , downDirection);
+            if (mfindReplace != null)
+            {
+                mfindReplace.FindNext(findText, downDirection);
+                mfindReplace.SetActive(false);
+            }
 
         }
 
@@ -50,12 +66,15 @@ namespace EncryptNotepad
             if (e.KeyCode == Keys.Enter)
             {
                 findButton_Click(new object(), new EventArgs());
+                this.Focus();
             }
+
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
             exiting = true;
+            //if (mfindReplace != null) mfindReplace.SetActive(false);
             this.Close();
         }
 
@@ -74,6 +93,7 @@ namespace EncryptNotepad
         private void FindForm_Enter(object sender, EventArgs e)
         {
             this.Opacity = 1;
+            TextBoxFocus();
         }
 
         private void findTab_SelectedIndexChanged(object sender, EventArgs e)
@@ -90,12 +110,18 @@ namespace EncryptNotepad
                 upRadioButton.Checked = upRadioButton2.Checked = true;
                 downRadioButton.Checked = downRadioButton2.Checked = false;
             }
+
+            TextBoxFocus();
         }
 
         private void replaceButton_Click(object sender, EventArgs e)
         {
             findText = findWhat2TextBox.Text;
-            if (mfindReplace != null) mfindReplace.Replace(findText, replaceWithTextBox.Text , downDirection);
+            if (mfindReplace != null)
+            {
+                mfindReplace.Replace(findText, replaceWithTextBox.Text, downDirection);
+                //mfindReplace.SetActive(false);
+            }
         }
 
         private void upRadioButton2_CheckedChanged(object sender, EventArgs e)
@@ -103,5 +129,6 @@ namespace EncryptNotepad
             if (findTab.SelectedTab == tabPage1) downDirection = downRadioButton.Checked;
             else if (findTab.SelectedTab == tabPage2) downDirection = downRadioButton2.Checked;
         }
+
     }
 }

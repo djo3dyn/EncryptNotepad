@@ -8,41 +8,42 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Drawing.Printing;
+using System.Xml.Serialization;
 
 // Custom Directive
 using EncryptDecryptSymetric;
 
 namespace EncryptNotepad
 {
-    public partial class MainForm : Form , IFindReplace
+    public partial class MainForm : Form, IFindReplace
     {
-        
+        // Main Text Box :
         private string currentFileName;
-
         private string defaultFileName;
         private FileStream textStream;
         private bool edited;
         private bool encrypted;
         private bool forceEdit;
+        private Font textFont;
 
-        // printing
-        private PrintDocument printDocument;
 
         // Find replace
         private string currentFindText;
         private string currentReplaceText;
         private int findPos = 0;
         private bool downDirection = true;
+        private bool findingActive = false;
 
         public MainForm()
         {
             InitializeComponent();
-            
+
             // My init
             defaultFileName = "Untitled";
             CryptpadUpdate();
-            printDocument = new PrintDocument();
-            printDocument.PrintPage += PrintDocument_PrintPage;
+
+            // Load Settings
+            LoadSettings();
         }
 
         private void PrintDocument_PrintPage(object sender, PrintPageEventArgs e)
@@ -65,7 +66,7 @@ namespace EncryptNotepad
             string tempText = null;
             string encryptext = null;
             string editedText = null;
-            if (fullPath) tempText = text; 
+            if (fullPath) tempText = text;
             else
             {
                 string[] spitFileName = text.Split('\\');
@@ -91,7 +92,7 @@ namespace EncryptNotepad
             SetWindowTitle(currentFileName);
             edited = false;
             cryptUIUpdate();
-            
+
         }
 
         private bool saveConfirmation()
@@ -99,7 +100,7 @@ namespace EncryptNotepad
             if (edited)
             {
                 String textMessage = "Do you want to save " + currentFileName + " ?";
-                DialogResult result = MessageBox.Show(textMessage , "Cryptpad" , MessageBoxButtons.YesNoCancel , MessageBoxIcon.Question);
+                DialogResult result = MessageBox.Show(textMessage, "Cryptpad", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                 {
                     if (saveAsFile()) return true;
@@ -109,7 +110,7 @@ namespace EncryptNotepad
                 {
                     return true;
                 }
-                else 
+                else
                 {
                     return false;
                 }
@@ -118,7 +119,7 @@ namespace EncryptNotepad
             {
                 return true;
             }
-            
+
         }
 
         private bool saveAsFile()
@@ -154,7 +155,7 @@ namespace EncryptNotepad
                 edited = false;
                 SetWindowTitle(currentFileName);
             }
-            
+
         }
 
         private bool cryptConfirmation(bool encrypted)
@@ -177,7 +178,7 @@ namespace EncryptNotepad
 
         private bool cryptEditConfirmation()
         {
-            
+
             String textMessage = "This text looks like encrypted. Editing text may cause this file cannot be decrypted.\nDo you want to continue edit this text?";
             DialogResult result = MessageBox.Show(textMessage, "Cryptpad", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (result == DialogResult.Yes)
@@ -212,7 +213,70 @@ namespace EncryptNotepad
 
         }
 
+        private void ShowStatusBar(bool show , bool first)
+        {
+            if (!show)
+            {
+                statusBar.Hide();
+                mainTextBox.Height += statusBar.Height;
+                statusBarToolStripMenuItem.Checked = false;
+            }
+            else
+            {
+                statusBar.Show();
+                if (!first) mainTextBox.Height -= statusBar.Height;
+                statusBarToolStripMenuItem.Checked = true;
+            }
+        }
 
+        private void saveSettings()
+        {
+            DataSettings settings = new DataSettings()
+            {
+                fontName = mainTextBox.Font.Name,
+                fontSize = mainTextBox.Font.Size,
+                fontStyle = mainTextBox.Font.Style,
+                wordwrapEnable = mainTextBox.WordWrap,
+                findText = currentFindText,
+                replaceText = currentReplaceText,
+                downDirection = this.downDirection,
+                statusBarShow = statusBarToolStripMenuItem.Checked
+            };
+            XmlSerializer serializer = new XmlSerializer(typeof(DataSettings));
+            using (TextWriter writer = new StreamWriter("settings.config"))
+            {
+                serializer.Serialize(writer, settings);
+            }
+        }
+
+        private void LoadSettings()
+        {
+            DataSettings settings = new DataSettings();
+            XmlSerializer serializer = new XmlSerializer(typeof(DataSettings));
+            try
+            {
+                TextReader reader = new StreamReader("settings.config");
+                settings = (DataSettings)serializer.Deserialize(reader);
+                reader.Close();
+                // Debug
+                Console.WriteLine("Font Setting : {0} , {1} , {2}", settings.fontName, settings.fontSize, settings.fontStyle);
+                // Fetch data
+                Font font = new Font(settings.fontName, settings.fontSize, settings.fontStyle);
+                mainTextBox.Font = font;
+                currentFindText = settings.findText;
+                currentReplaceText = settings.replaceText;
+                downDirection = settings.downDirection;
+                mainTextBox.WordWrap = wordWrapToolStripMenuItem.Checked = settings.wordwrapEnable;
+                statusBarToolStripMenuItem.Checked = settings.statusBarShow;
+                ShowStatusBar(settings.statusBarShow , true);
+            }
+            catch (Exception)
+            {
+                // Do Nothing....
+            }
+            
+
+        }
         // Interface Implementation -------------------------------------
         public void FindNext(string text, bool down)
         {
@@ -246,10 +310,15 @@ namespace EncryptNotepad
             FindNext(text, dir);
         }
 
+        public void SetActive(bool active)
+        {
+            findingActive = active;
+        }
 
-        // UI Listener ========================================================
 
-        // Encrypt - Decrypt -----
+            // UI Listener ========================================================
+
+            // Encrypt - Decrypt -----
         private void encryptMenu_Click(object sender, EventArgs e)
         {
             encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
@@ -332,6 +401,7 @@ namespace EncryptNotepad
         }
         private void mainTextBox_KeyDown(object sender, KeyEventArgs e)
         {
+            
 
             if (encrypted && !forceEdit)
             {
@@ -365,8 +435,7 @@ namespace EncryptNotepad
         private void newWinMenu_Click(object sender, EventArgs e)
         {
 
-            MainForm mainForm = new MainForm();
-            mainForm.Show();
+            System.Diagnostics.Process.Start(typeof(Program).Assembly.GetName().Name);
 
         }
 
@@ -465,6 +534,7 @@ namespace EncryptNotepad
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!saveConfirmation()) e.Cancel = true;
+            else saveSettings();
         }
 
 
@@ -535,6 +605,7 @@ namespace EncryptNotepad
             if (fontDialog.ShowDialog() == DialogResult.OK)
             {
                 mainTextBox.Font = fontDialog.Font;
+                textFont = fontDialog.Font;
             }
         }
         private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
@@ -554,21 +625,20 @@ namespace EncryptNotepad
         // View menu
         private void statusBarToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (statusBarToolStripMenuItem.Checked)
-            {
-                statusBar.Hide();
-                mainTextBox.Height += statusBar.Height;
-                statusBarToolStripMenuItem.Checked = false;
-            }
-            else
-            {
-                statusBar.Show();
-                mainTextBox.Height -= statusBar.Height;
-                statusBarToolStripMenuItem.Checked = true;
-            }
+            ShowStatusBar(!statusBarToolStripMenuItem.Checked, false);
+           
 
-        }   
+        }
 
+        private void testButtonToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveSettings();
+        }
+
+        private void loadSettingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadSettings();
+        }
     } 
     
 }
