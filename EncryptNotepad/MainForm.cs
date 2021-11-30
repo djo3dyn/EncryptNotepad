@@ -9,7 +9,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Drawing.Printing;
 using System.Xml.Serialization;
-
+using System.Reflection;
 // Custom Directive
 using EncryptDecryptSymetric;
 
@@ -24,8 +24,6 @@ namespace EncryptNotepad
         private bool edited;
         private bool encrypted;
         private bool forceEdit;
-        private Font textFont;
-
 
         // Find replace
         private string currentFindText;
@@ -34,14 +32,30 @@ namespace EncryptNotepad
         private bool downDirection = true;
         private bool findingActive = false;
 
-        public MainForm()
+        // Status bar
+        private Encoding textEncoding;
+        private string newlineType;
+        // File path
+        string appPath;
+        public MainForm(string[] args)
         {
             InitializeComponent();
-
-            // My init
+            
             defaultFileName = "Untitled";
             CryptpadUpdate();
-
+            if (args != null)
+            {
+                if (args.Length == 1)
+                {
+                    openFile(args[0]);
+                }
+                
+            }
+            else
+            {
+                
+            }
+            appPath = Application.StartupPath;
             // Load Settings
             LoadSettings();
         }
@@ -93,6 +107,64 @@ namespace EncryptNotepad
             edited = false;
             cryptUIUpdate();
 
+        }
+
+        private void openFile(string fileName)
+        {
+            // Try to pen file
+            FileStream fsSource;
+            try
+            {
+                fsSource = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            }
+            catch(Exception)
+            {
+                MsgBox.ShowError("Cryptpad", "Can not open file");
+                return;
+            }
+
+            // Init file name
+            int fileSize = (int)fsSource.Length;
+            Console.WriteLine(fileSize);
+            byte[] fileBytes = new byte[fileSize];
+            string encodedTextTemp = String.Empty;
+
+            using (StreamReader reader = new StreamReader(fsSource))
+            {
+                encodedTextTemp = reader.ReadToEnd();
+                textEncoding = reader.CurrentEncoding;
+                Console.WriteLine("The encoding used was {0}.", reader.CurrentEncoding);
+            }
+            if (encodedTextTemp.Contains("\r\n"))
+            {
+                newlineType = "Windows (CRLF)";
+
+            }
+            else if (encodedTextTemp.Contains("\n"))
+            {
+                newlineType = "Unix (LF)";
+
+            }
+
+            using (StringReader reader = new StringReader(encodedTextTemp))
+            {
+                string temp = String.Empty;
+                string textBoxTemp = String.Empty;
+                while (true)
+                {
+                    if ((temp = reader.ReadLine()) != null) textBoxTemp += temp + "\r\n";
+                    else break;
+                }
+                mainTextBox.Text = textBoxTemp;
+
+            }
+
+            currentFileName = fileName;
+            edited = false;
+            SetWindowTitle(currentFileName);
+            mainTextBox.Select(0, 0);
+            encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
+            cryptUIUpdate();
         }
 
         private bool saveConfirmation()
@@ -200,16 +272,35 @@ namespace EncryptNotepad
             }
             else mainTextBox.ReadOnly = false;
             SetWindowTitle(currentFileName);
+            statusBarUpdate();
 
         }
 
         private void statusBarUpdate()
         {
+            if (encrypted) cryptStatus.Text = "Encrypted";
+            else cryptStatus.Text = "Decrypted";
+
+            newlineStatus.Text = newlineType;
+
+            if (textEncoding == Encoding.ASCII) encodingStatus.Text = "ASCII";
+            else if (textEncoding == Encoding.UTF8) encodingStatus.Text = "UTF-8";
+            else if (textEncoding == Encoding.Unicode) encodingStatus.Text = "Unicode";
+            else if (textEncoding == Encoding.UTF7) encodingStatus.Text = "UTF-7";
+            else if (textEncoding == Encoding.Default) encodingStatus.Text = "Default";
+            else if (textEncoding == Encoding.BigEndianUnicode) encodingStatus.Text = "Unicode BE";
+            else encodingStatus.Text = "Unknow";
 
         }
 
-        private void menuStripUpdate()
+        private void GetCursorPosition()
         {
+            int carretIndex = mainTextBox.SelectionStart;
+            int lineNumber = mainTextBox.GetLineFromCharIndex(carretIndex);
+            int indexCurrentLine = mainTextBox.GetFirstCharIndexOfCurrentLine();
+            int colPosition =  carretIndex - indexCurrentLine;
+
+            positionStatus.Text = "Ln " + lineNumber + " , Col " + colPosition;
 
         }
 
@@ -243,7 +334,7 @@ namespace EncryptNotepad
                 statusBarShow = statusBarToolStripMenuItem.Checked
             };
             XmlSerializer serializer = new XmlSerializer(typeof(DataSettings));
-            using (TextWriter writer = new StreamWriter("settings.config"))
+            using (TextWriter writer = new StreamWriter(appPath +"\\settings.config"))
             {
                 serializer.Serialize(writer, settings);
             }
@@ -255,7 +346,7 @@ namespace EncryptNotepad
             XmlSerializer serializer = new XmlSerializer(typeof(DataSettings));
             try
             {
-                TextReader reader = new StreamReader("settings.config");
+                TextReader reader = new StreamReader(appPath + "\\settings.config");
                 settings = (DataSettings)serializer.Deserialize(reader);
                 reader.Close();
                 // Debug
@@ -401,8 +492,6 @@ namespace EncryptNotepad
         }
         private void mainTextBox_KeyDown(object sender, KeyEventArgs e)
         {
-            
-
             if (encrypted && !forceEdit)
             {
                 if ((e.KeyValue >= 32 && e.KeyValue <= 255) || e.KeyCode == Keys.Back || e.KeyCode == Keys.Delete)
@@ -414,8 +503,10 @@ namespace EncryptNotepad
                         forceEdit = true;
                     }
                 }
+                e.Handled = true;
             }
-            e.Handled = true;
+            GetCursorPosition();
+            
         }
 
         private void mainTextBox_Validated(object sender, EventArgs e)
@@ -451,53 +542,8 @@ namespace EncryptNotepad
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                using (FileStream fsSource = new FileStream(openFileDialog.FileName, FileMode.Open, FileAccess.Read))
-                {  
-                    int fileSize = (int)fsSource.Length;
-                    Console.WriteLine(fileSize);
-                    byte[] fileBytes = new byte[fileSize];
-                    string encodedTextTemp = String.Empty;
-                    
-                    using (StreamReader reader = new StreamReader(fsSource))
-                    {
-                        encodedTextTemp = reader.ReadToEnd();
-                        Console.WriteLine("The encoding used was {0}.", reader.CurrentEncoding);
-                    }
-                    string newLine = String.Empty;
-                    if (encodedTextTemp.Contains("\r\n"))
-                    {
-                        newLine = "\r\n";
-                        Console.WriteLine("CRLF");
-                    }
-                    else if (encodedTextTemp.Contains("\n"))
-                    {
-                        newLine = "\n";
-                        Console.WriteLine("LF");
-                    }
-
-                    using (StringReader reader = new StringReader(encodedTextTemp))
-                    {
-                        string temp = String.Empty;
-                        string textBoxTemp = String.Empty;
-                        while (true)
-                        {
-                            if ((temp = reader.ReadLine()) != null) textBoxTemp += temp + "\r\n";
-                            else break;
-                        }
-                        mainTextBox.Text = textBoxTemp;
-
-                    }
-                    fsSource.Close();
-
-                }
-                currentFileName = openFileDialog.FileName;
-                edited = false;
-                SetWindowTitle(currentFileName);
-                mainTextBox.Select(0, 0);
+                openFile(openFileDialog.FileName);   
             }
-
-            encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
-            cryptUIUpdate();
 
         }
 
@@ -605,7 +651,6 @@ namespace EncryptNotepad
             if (fontDialog.ShowDialog() == DialogResult.OK)
             {
                 mainTextBox.Font = fontDialog.Font;
-                textFont = fontDialog.Font;
             }
         }
         private void wordWrapToolStripMenuItem_Click(object sender, EventArgs e)
@@ -638,6 +683,17 @@ namespace EncryptNotepad
         private void loadSettingToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadSettings();
+        }
+
+        private void mainTextBox_Click_1(object sender, EventArgs e)
+        {
+            GetCursorPosition();
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutBoxForm about = new AboutBoxForm();
+            about.Show(this);
         }
     } 
     

@@ -29,6 +29,7 @@ namespace EncryptNotepad
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -64,6 +65,10 @@ namespace EncryptNotepad
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.cryptStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.positionStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.newlineStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.encodingStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainTextBox = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.statusBar.SuspendLayout();
@@ -356,15 +361,20 @@ namespace EncryptNotepad
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.aboutToolStripMenuItem.Text = "About...";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // statusBar
             // 
             this.statusBar.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.cryptStatus});
-            this.statusBar.Location = new System.Drawing.Point(0, 609);
+            this.cryptStatus,
+            this.toolStripStatusLabel1,
+            this.positionStatus,
+            this.newlineStatus,
+            this.encodingStatus});
+            this.statusBar.Location = new System.Drawing.Point(0, 605);
             this.statusBar.Name = "statusBar";
-            this.statusBar.Size = new System.Drawing.Size(958, 26);
+            this.statusBar.Size = new System.Drawing.Size(958, 30);
             this.statusBar.SizingGrip = false;
             this.statusBar.TabIndex = 2;
             this.statusBar.Text = "statusBar";
@@ -372,9 +382,47 @@ namespace EncryptNotepad
             // 
             // cryptStatus
             // 
+            this.cryptStatus.AutoSize = false;
             this.cryptStatus.Name = "cryptStatus";
-            this.cryptStatus.Size = new System.Drawing.Size(49, 20);
-            this.cryptStatus.Text = "Status";
+            this.cryptStatus.Size = new System.Drawing.Size(200, 24);
+            this.cryptStatus.Text = "Decrypted";
+            this.cryptStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.None;
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 24);
+            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            // 
+            // positionStatus
+            // 
+            this.positionStatus.AutoSize = false;
+            this.positionStatus.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left;
+            this.positionStatus.Margin = new System.Windows.Forms.Padding(1, 4, 0, 2);
+            this.positionStatus.Name = "positionStatus";
+            this.positionStatus.Size = new System.Drawing.Size(120, 24);
+            this.positionStatus.Text = "Ln 1 , Col 1";
+            this.positionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // newlineStatus
+            // 
+            this.newlineStatus.AutoSize = false;
+            this.newlineStatus.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left;
+            this.newlineStatus.Name = "newlineStatus";
+            this.newlineStatus.Size = new System.Drawing.Size(200, 24);
+            this.newlineStatus.Text = "Windows (CRLF)";
+            this.newlineStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // encodingStatus
+            // 
+            this.encodingStatus.AutoSize = false;
+            this.encodingStatus.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left;
+            this.encodingStatus.Name = "encodingStatus";
+            this.encodingStatus.Size = new System.Drawing.Size(422, 24);
+            this.encodingStatus.Spring = true;
+            this.encodingStatus.Text = "UTF-8";
+            this.encodingStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // mainTextBox
             // 
@@ -393,6 +441,7 @@ namespace EncryptNotepad
             this.mainTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.mainTextBox.Size = new System.Drawing.Size(958, 579);
             this.mainTextBox.TabIndex = 3;
+            this.mainTextBox.Click += new System.EventHandler(this.mainTextBox_Click_1);
             this.mainTextBox.TextChanged += new System.EventHandler(this.mainTextBox_TextChanged);
             this.mainTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.mainTextBox_KeyDown);
             // 
@@ -404,6 +453,7 @@ namespace EncryptNotepad
             this.Controls.Add(this.mainTextBox);
             this.Controls.Add(this.statusBar);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "Cryptpad";
@@ -457,6 +507,10 @@ namespace EncryptNotepad
         private System.Windows.Forms.TextBox mainTextBox;
         private System.Windows.Forms.ToolStripMenuItem dateToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel cryptStatus;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripStatusLabel positionStatus;
+        private System.Windows.Forms.ToolStripStatusLabel newlineStatus;
+        private System.Windows.Forms.ToolStripStatusLabel encodingStatus;
     }
 }
 
