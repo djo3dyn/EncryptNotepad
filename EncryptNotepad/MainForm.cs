@@ -20,7 +20,6 @@ namespace EncryptNotepad
         // Main Text Box :
         private string currentFileName;
         private string defaultFileName;
-        private FileStream textStream;
         private bool edited;
         private bool encrypted;
         private bool forceEdit;
@@ -30,19 +29,25 @@ namespace EncryptNotepad
         private string currentReplaceText;
         private int findPos = 0;
         private bool downDirection = true;
-        private bool findingActive = false;
 
         // Status bar
         private Encoding textEncoding;
         private string newlineType;
         // File path
         string appPath;
+
         public MainForm(string[] args)
         {
             InitializeComponent();
             
             defaultFileName = "Untitled";
             CryptpadUpdate();
+
+            // Load Settings
+            appPath = Application.StartupPath;
+            LoadSettings();
+
+            // Check open file
             if (args != null)
             {
                 if (args.Length == 1)
@@ -53,16 +58,10 @@ namespace EncryptNotepad
             }
             else
             {
+                currentFileName = defaultFileName;
                 
             }
-            appPath = Application.StartupPath;
-            // Load Settings
-            LoadSettings();
-        }
-
-        private void PrintDocument_PrintPage(object sender, PrintPageEventArgs e)
-        {
-            throw new NotImplementedException();
+            
         }
 
         private void CryptpadUpdate()
@@ -160,6 +159,7 @@ namespace EncryptNotepad
             }
 
             currentFileName = fileName;
+            
             edited = false;
             SetWindowTitle(currentFileName);
             mainTextBox.Select(0, 0);
@@ -201,6 +201,14 @@ namespace EncryptNotepad
             saveFileDialog1.FilterIndex = 1;
             saveFileDialog1.RestoreDirectory = true;
 
+            if (currentFileName != defaultFileName)
+            {
+                FileInfo fi = new FileInfo(currentFileName);
+                string dir = fi.Directory.ToString();
+                saveFileDialog1.InitialDirectory = dir;
+            }
+            else saveFileDialog1.InitialDirectory = "c:\\";
+
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 currentFileName = saveFileDialog1.FileName;
@@ -216,16 +224,22 @@ namespace EncryptNotepad
 
         private void saveFile()
         {
-            textStream = new FileStream(currentFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            FileStream textStream = new FileStream(currentFileName, FileMode.Create, FileAccess.Write);
+            Console.WriteLine(currentFileName);
             if (textStream != null)
             {
-                using (StreamWriter sw = new StreamWriter(textStream))
-                {
-                    sw.Write(mainTextBox.Text);
-                }
+                StreamWriter sw = new StreamWriter(textStream);
+                sw.Write(mainTextBox.Text);
+
+                sw.Flush();
+                sw.Close();
                 textStream.Close();
                 edited = false;
                 SetWindowTitle(currentFileName);
+            }
+            else
+            {
+                Console.WriteLine("text stream null.....");
             }
 
         }
@@ -324,19 +338,25 @@ namespace EncryptNotepad
         {
             DataSettings settings = new DataSettings()
             {
-                fontName = mainTextBox.Font.Name,
-                fontSize = mainTextBox.Font.Size,
-                fontStyle = mainTextBox.Font.Style,
-                wordwrapEnable = mainTextBox.WordWrap,
-                findText = currentFindText,
-                replaceText = currentReplaceText,
-                downDirection = this.downDirection,
-                statusBarShow = statusBarToolStripMenuItem.Checked
+                FontName = mainTextBox.Font.Name,
+                FontSize = mainTextBox.Font.Size,
+                FontStyle = mainTextBox.Font.Style,
+                WordwrapEnable = mainTextBox.WordWrap,
+                FindText = currentFindText,
+                ReplaceText = currentReplaceText,
+                DownDirection = this.downDirection,
+                StatusBarShow = statusBarToolStripMenuItem.Checked,
+                //CurrentFileName = this.currentFileName
             };
             XmlSerializer serializer = new XmlSerializer(typeof(DataSettings));
-            using (TextWriter writer = new StreamWriter(appPath +"\\settings.config"))
+            try
             {
-                serializer.Serialize(writer, settings);
+                TextWriter writer = new StreamWriter(appPath + "\\settings.config");
+                serializer.Serialize(writer, settings); 
+            }
+            catch (Exception)
+            {
+                // Do Nothing.... not save settings
             }
         }
 
@@ -349,21 +369,20 @@ namespace EncryptNotepad
                 TextReader reader = new StreamReader(appPath + "\\settings.config");
                 settings = (DataSettings)serializer.Deserialize(reader);
                 reader.Close();
-                // Debug
-                Console.WriteLine("Font Setting : {0} , {1} , {2}", settings.fontName, settings.fontSize, settings.fontStyle);
                 // Fetch data
-                Font font = new Font(settings.fontName, settings.fontSize, settings.fontStyle);
+                Font font = new Font(settings.FontName, settings.FontSize, settings.FontStyle);
                 mainTextBox.Font = font;
-                currentFindText = settings.findText;
-                currentReplaceText = settings.replaceText;
-                downDirection = settings.downDirection;
-                mainTextBox.WordWrap = wordWrapToolStripMenuItem.Checked = settings.wordwrapEnable;
-                statusBarToolStripMenuItem.Checked = settings.statusBarShow;
-                ShowStatusBar(settings.statusBarShow , true);
+                currentFindText = settings.FindText;
+                currentReplaceText = settings.ReplaceText;
+                downDirection = settings.DownDirection;
+                mainTextBox.WordWrap = wordWrapToolStripMenuItem.Checked = settings.WordwrapEnable;
+                statusBarToolStripMenuItem.Checked = settings.StatusBarShow;
+                //this.currentFileName = settings.CurrentFileName;
+                ShowStatusBar(settings.StatusBarShow , true);
             }
             catch (Exception)
             {
-                // Do Nothing....
+                // Do Nothing....Not Load settings
             }
             
 
@@ -403,13 +422,13 @@ namespace EncryptNotepad
 
         public void SetActive(bool active)
         {
-            findingActive = active;
+            
         }
 
 
-            // UI Listener ========================================================
+        // UI Listener ========================================================
 
-            // Encrypt - Decrypt -----
+        // Encrypt - Decrypt -----
         private void encryptMenu_Click(object sender, EventArgs e)
         {
             encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
@@ -512,9 +531,8 @@ namespace EncryptNotepad
         private void mainTextBox_Validated(object sender, EventArgs e)
         {
             encrypted = AesOperation.CheckEncrypted(mainTextBox.Text);
-            SetWindowTitle(currentFileName);
-
-
+            CryptpadUpdate();
+            cryptUIUpdate();
         }
 
         // File menu--------
@@ -525,8 +543,8 @@ namespace EncryptNotepad
 
         private void newWinMenu_Click(object sender, EventArgs e)
         {
-
-            System.Diagnostics.Process.Start(typeof(Program).Assembly.GetName().Name);
+            string assName = typeof(Program).Assembly.GetName().Name;
+            System.Diagnostics.Process.Start(appPath + "\\" + assName);
 
         }
 
@@ -535,15 +553,22 @@ namespace EncryptNotepad
             if (!saveConfirmation()) return;
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.InitialDirectory = "c:\\";
+            
             openFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
             openFileDialog.FilterIndex = 1;
             openFileDialog.RestoreDirectory = true;
 
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            if (currentFileName != defaultFileName)
             {
-                openFile(openFileDialog.FileName);   
+                FileInfo fi = new FileInfo(currentFileName);
+                string dir = fi.Directory.ToString();
+                openFileDialog.InitialDirectory = dir;
             }
+            else openFileDialog.InitialDirectory = "c:\\";
+            
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)  openFile(openFileDialog.FileName);   
+            
 
         }
 
